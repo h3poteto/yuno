@@ -14,24 +14,53 @@ type Kingtime struct {
 	token string
 }
 
-func New(URL, token string) *Kingtime {
+var URL = "https://api.kingtime.jp/v1.0"
+
+func New(token string) *Kingtime {
 	return &Kingtime{
 		URL,
 		token,
 	}
 }
 
-func (k *Kingtime) post(path string, params []byte) ([]byte, error) {
-	req, err := http.NewRequest("Post", k.URL+path, bytes.NewBuffer(params))
+func (k *Kingtime) get(path string) ([]byte, error) {
+	req, err := http.NewRequest("GET", k.URL+path, nil)
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("ContentType", "application/json")
+	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+	req.Header.Set("Authorization", "Bearer "+k.token)
+	log.Info(k.token)
+	cli := http.Client{}
+	res, err := cli.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	defer res.Body.Close()
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		log.Error("Parse error")
+		return nil, err
+	}
+
+	if res.StatusCode != http.StatusOK {
+		return nil, errors.Errorf("Status is invalid: %s", body)
+	}
+
+	return body, nil
+}
+
+func (k *Kingtime) post(path string, params []byte) ([]byte, error) {
+	req, err := http.NewRequest("POST", k.URL+path, bytes.NewBuffer(params))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json; charset=utf-8")
 	req.Header.Set("Authorization", "Bearer "+k.token)
 
 	cli := http.Client{}
 	res, err := cli.Do(req)
-	log.Info("Requesting")
 	if err != nil {
 		return nil, err
 	}
