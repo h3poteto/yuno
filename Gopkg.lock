@@ -68,6 +68,7 @@
   analyzer-version = 1
   input-imports = [
     "github.com/nlopes/slack",
+    "github.com/pkg/errors",
     "github.com/sirupsen/logrus",
   ]
   solver-name = "gps-cdcl"

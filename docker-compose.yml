@@ -4,6 +4,7 @@ services:
     image: h3poteto/golang:1.11.2
     environment:
       SLACK_TOKEN: $SLACK_TOKEN
+      KING_OF_TIME_TOKEN: $KING_OF_TIME_TOKEN
     working_dir: /go/src/github.com/h3poteto/yuno
     volumes:
       - .:/go/src/github.com/h3poteto/yuno

@@ -7,12 +7,19 @@ import (
 
 type Listener struct {
 	client *slack.Client
+	user   *userData
+}
+
+type userData struct {
+	ID   string
+	Name string
 }
 
 func NewListener(token string) *Listener {
 	client := slack.New(token)
 	return &Listener{
-		client,
+		client: client,
+		user:   nil,
 	}
 }
 
@@ -25,11 +32,18 @@ func (l *Listener) Listen() {
 		case *slack.HelloEvent:
 			// Ignore hello
 		case *slack.ConnectedEvent:
-			log.Info("Infos:", ev.Info)
+			log.Infof("Infos: %+v", *ev.Info)
 			log.Info("Connection counter:", ev.ConnectionCount)
-			// rtm.SendMessage(rtm.NewOutgoingMessage("Hello world", ev.Channel))
+
+			// Update user data from connected event, to get bot user name and ID.
+			user := &userData{
+				ID:   ev.Info.User.ID,
+				Name: ev.Info.User.Name,
+			}
+			l.user = user
 
 		case *slack.MessageEvent:
+			log.Debugf("event: %+v", ev)
 			err := l.MessageHandler(ev, rtm)
 			if err != nil {
 				log.Error(err)
